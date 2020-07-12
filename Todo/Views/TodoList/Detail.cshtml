@@ -14,9 +14,16 @@
     <ul class="list-group">
 
         <li class="list-group-item">
-            <a asp-action="Create" asp-controller="TodoItem" asp-route-todoListId="@Model.TodoListId">
-                <strong>Add New Item</strong>
-            </a>
+            <div class="row">
+                <div class="col-md-6">
+                    <a asp-action="Create" asp-controller="TodoItem" asp-route-todoListId="@Model.TodoListId">
+                        <strong>Add New Item</strong>
+                    </a>
+                </div>
+                <div class="col-md-6 text-right">
+                    Include Done: <input id="chkShowHide" type="checkbox" onclick="showHideDone()" checked />
+                </div>
+            </div>
         </li>
 
         @foreach (var item in Model.Items.OrderBy(x => x.Importance))
@@ -35,7 +42,7 @@
                     break;
             }
 
-            <li class="list-group-item @contextualClass">
+            <li class="list-group-item @contextualClass" data-done="@item.IsDone">
                 
                 <div class="row">
 
@@ -67,3 +74,25 @@
         }
     </ul>
 </div>
+<script>
+
+    function showHideDone() {
+
+        var checked = document.getElementById("chkShowHide").checked;
+        var items = document.querySelectorAll("[data-done='True']");
+        
+        for (i = 0; i < items.length; i++) {
+            toggleShow(items[i], checked);
+        }
+    }
+
+    function toggleShow(element, show) {
+
+        if (show === false) {
+            element.style.display = "none";
+        } else {
+            element.style.display = "block";
+        }
+    }
+
+</script>
