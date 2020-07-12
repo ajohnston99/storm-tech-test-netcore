@@ -21,7 +21,7 @@
                     </a>
                 </div>
                 <div class="col-md-6 text-right">
-                    Include Done: <input id="chkShowHide" type="checkbox" onclick="showHideDone()" checked />
+                    Include Done: <input id="chkShowHideDoneItems" type="checkbox" onclick="showHideDoneItems()" checked />
                 </div>
             </div>
         </li>
@@ -74,19 +74,36 @@
         }
     </ul>
 </div>
+
 <script>
+    $(document).ready(function () {
 
-    function showHideDone() {
+        //if the showDoneItems session variable exists then set the checkbox and execute the show/hide function
+        //could use session storage, localstorage or a cookie
+        let showDone = localStorage.getItem('showDoneItems');
+        //alert(data);
+        if (showDone === "false")
+        {
+            document.getElementById("chkShowHideDoneItems").checked = false;
+            //set the checkbox to unchecked
+        }
+        showHideDoneItems();
 
-        var checked = document.getElementById("chkShowHide").checked;
-        var items = document.querySelectorAll("[data-done='True']");
+    });
+    
+    function showHideDoneItems() {
+
+        let checked = document.getElementById("chkShowHideDoneItems").checked;
+        let items = document.querySelectorAll("[data-done='True']");
+
+        localStorage.setItem("showDoneItems", checked);
         
         for (i = 0; i < items.length; i++) {
-            toggleShow(items[i], checked);
+            toggleDisplay(items[i], checked);
         }
     }
 
-    function toggleShow(element, show) {
+    function toggleDisplay(element, show) {
 
         if (show === false) {
             element.style.display = "none";
