@@ -10,6 +10,8 @@ namespace Todo.Data.Entities {
         public bool IsDone { get; set; }
         public Importance Importance { get; set; }
 
+        public int Rank { get; set; }
+
         public int TodoListId { get; set; }
         public TodoList TodoList { get; set; }
 
