@@ -1,10 +1,13 @@
-﻿using Todo.Data.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using Todo.Data.Entities;
 
 namespace Todo.Models.TodoItems
 {
     public class TodoItemCreateFields
     {
+        [Required]
         public int TodoListId { get; set; }
+        [Required]
         public string Title { get; set; }
         public string TodoListTitle { get; set; }
         public string ResponsiblePartyId { get; set; }

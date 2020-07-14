@@ -7,10 +7,10 @@
     ViewData["Title"] = $"List: {Model.Title}";
 }
 
-<h2>@ViewData["Title"]</h2>
+
 
 <div class="col-md-6">
-
+    <h2>@ViewData["Title"]</h2>
 
     <ul id="taskList" class="list-group">
 
@@ -51,34 +51,34 @@
             }
 
             <li class="list-group-item @contextualClass" data-done="@item.IsDone" data-rank="@item.Rank" data-importance="@((int)item.Importance)">
-                
+
                 <div class="row">
 
-                <div class="col-md-8">
-                    <a asp-action="Edit" asp-controller="TodoItem" asp-route-todoItemId="@item.TodoItemId">
+                    <div class="col-md-8">
+                        <a asp-action="Edit" asp-controller="TodoItem" asp-route-todoItemId="@item.TodoItemId">
 
-                        @if (item.IsDone)
-                        {
-                            <s>@item.Title</s>
-                        }
-                        else
-                        {
-                            <text>@item.Title</text>
-                        }
-                    </a>
-                </div>
-
-                <div class="col-md-4 text-right">
-                    <small>
-                        @item.ResponsibleParty.UserName
-
-                        <img src="https://www.gravatar.com/avatar/@Gravatar.GetHash(item.ResponsibleParty.Email)?s=30" />
-
-                    </small>
-                    <div id="gravatarName" data-hash="@Gravatar.GetHash(item.ResponsibleParty.Email)">
-                        @*<script src="https://www.gravatar.com/@(Gravatar.GetHash(item.ResponsibleParty.Email)).json?callback=changeTitle" type="text/javascript"></script>*@
+                            @if (item.IsDone)
+                            {
+                                <s>@item.Title</s>
+                            }
+                            else
+                            {
+                                <text>@item.Title</text>
+                            }
+                        </a>
                     </div>
-                </div>
+
+                    <div class="col-md-4 text-right">
+                        <small>
+                            @item.ResponsibleParty.UserName
+
+                            <img src="https://www.gravatar.com/avatar/@Gravatar.GetHash(item.ResponsibleParty.Email)?s=30" />
+
+                        </small>
+                        <div id="gravatarName" data-hash="@Gravatar.GetHash(item.ResponsibleParty.Email)">
+                            @*<script src="https://www.gravatar.com/@(Gravatar.GetHash(item.ResponsibleParty.Email)).json?callback=changeTitle" type="text/javascript"></script>*@
+                        </div>
+                    </div>
                 </div>
                 <div>Rank: @item.Rank</div>
 
@@ -87,8 +87,13 @@
     </ul>
 </div>
 
+<div class="col-md-4">
+    @await Html.PartialAsync("~/Views/TodoItem/_Create.cshtml", Model.CreateNewItem)
+    @*@await Html.PartialAsync("~/Views/TodoItem/_Create.cshtml", Model)*@
+</div>
+
 <script>
-    
+
 
     $(function () {
         //asynchronously update the items to show the gravatar username
@@ -99,16 +104,14 @@
         }
 
     });
-
-
+    
     $(function () {
 
         //if the showDoneItems session variable exists then set the checkbox and execute the show/hide function
         //could use session storage, localstorage or a cookie
         let showDone = localStorage.getItem('showDoneItems');
         //alert(data);
-        if (showDone === "false")
-        {
+        if (showDone === "false") {
             document.getElementById("chkShowHideDoneItems").checked = false;
             //set the checkbox to unchecked
         }
@@ -116,7 +119,18 @@
 
     });
 
-       
+    $(function () {
+
+        //retain the previous selected sort order
+        let sortOrder = localStorage.getItem("sortOrder");
+        //alert(data);
+        if (sortOrder !== null) {
+            document.getElementById("sortBy").value = sortOrder
+        }
+        sortList();
+
+    });
+    
     function showHideDoneItems() {
 
         let checked = document.getElementById("chkShowHideDoneItems").checked;
@@ -141,6 +155,7 @@
     function sortList() {
 
         let sortValue = document.getElementById("sortBy").value;
+        localStorage.setItem("sortOrder", sortValue);
 
         let items = $("#taskList").children("li");
         items.sort(function (a, b) {
@@ -165,11 +180,10 @@
     }
 
     function UpdateElement(element, innerHtml) {
-        element.innerHTML=innerHtml ;
+        element.innerHTML = innerHtml;
     }
 
-    async function getUserAsync(hash, element) 
-    {
+    async function getUserAsync(hash, element) {
         let url = "https://en.gravatar.com/" + hash + ".json"
         try {
             let response = await fetch(url);
