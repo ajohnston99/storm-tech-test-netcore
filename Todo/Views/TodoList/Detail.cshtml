@@ -11,9 +11,9 @@
 
 <div class="col-md-6">
 
-    <ul class="list-group">
+    <ul id="taskList" class="list-group">
 
-        <li class="list-group-item">
+        <li class="list-group-item" data-rank="-1">
             <div class="row">
                 <div class="col-md-6">
                     <a asp-action="Create" asp-controller="TodoItem" asp-route-todoListId="@Model.TodoListId">
@@ -22,6 +22,12 @@
                 </div>
                 <div class="col-md-6 text-right">
                     Include Done: <input id="chkShowHideDoneItems" type="checkbox" onclick="showHideDoneItems()" checked />
+                    
+                    <label for="sortBy">Sort By:</label>
+                    <select name="sortBy" id="sortBy" onchange="sortList()">
+                        <option value="importance" selected>importance</option>
+                        <option value="rank">rank</option>
+                    </select>
                 </div>
             </div>
         </li>
@@ -42,7 +48,7 @@
                     break;
             }
 
-            <li class="list-group-item @contextualClass" data-done="@item.IsDone">
+            <li class="list-group-item @contextualClass" data-done="@item.IsDone" data-rank="@item.Rank" data-importance="@((int)item.Importance)">
                 
                 <div class="row">
 
@@ -69,6 +75,7 @@
                     </small>
                 </div>
                 </div>
+                <div>Rank: @item.Rank</div>
 
             </li>
         }
@@ -76,7 +83,8 @@
 </div>
 
 <script>
-    $(document).ready(function () {
+
+        $(function () {
 
         //if the showDoneItems session variable exists then set the checkbox and execute the show/hide function
         //could use session storage, localstorage or a cookie
@@ -110,6 +118,19 @@
         } else {
             element.style.display = "block";
         }
+    }
+
+    function sortList() {
+
+        var sortValue = document.getElementById("sortBy").value;
+
+        var items = $("#taskList").children("li");
+        items.sort(function (a, b) {
+            return +$(a).data(sortValue) - +$(b).data(sortValue);
+        });
+
+        items.appendTo($("#taskList"));
+
     }
 
 </script>
