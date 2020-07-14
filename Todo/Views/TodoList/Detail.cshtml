@@ -11,18 +11,20 @@
 
 <div class="col-md-6">
 
+
     <ul id="taskList" class="list-group">
 
         <li class="list-group-item" data-rank="-1">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <a asp-action="Create" asp-controller="TodoItem" asp-route-todoListId="@Model.TodoListId">
                         <strong>Add New Item</strong>
                     </a>
                 </div>
-                <div class="col-md-6 text-right">
-                    Include Done: <input id="chkShowHideDoneItems" type="checkbox" onclick="showHideDoneItems()" checked />
-                    
+                <div class="col-md-8 text-right">
+                    <label for="chkShowHideDoneItems"></label>Include Done: </label>
+                    <input id="chkShowHideDoneItems" type="checkbox" onclick="showHideDoneItems()" checked />
+
                     <label for="sortBy">Sort By:</label>
                     <select name="sortBy" id="sortBy" onchange="sortList()">
                         <option value="importance" selected>importance</option>
@@ -70,9 +72,12 @@
                     <small>
                         @item.ResponsibleParty.UserName
 
-                        <img src="https://www.gravatar.com/avatar/@Gravatar.GetHash(item.ResponsibleParty.Email)?s=30"/>
+                        <img src="https://www.gravatar.com/avatar/@Gravatar.GetHash(item.ResponsibleParty.Email)?s=30" />
 
                     </small>
+                    <div id="gravatarName" data-hash="@Gravatar.GetHash(item.ResponsibleParty.Email)">
+                        @*<script src="https://www.gravatar.com/@(Gravatar.GetHash(item.ResponsibleParty.Email)).json?callback=changeTitle" type="text/javascript"></script>*@
+                    </div>
                 </div>
                 </div>
                 <div>Rank: @item.Rank</div>
@@ -83,8 +88,20 @@
 </div>
 
 <script>
+    
 
-        $(function () {
+    $(function () {
+        //asynchronously update the items to show the gravatar username
+        let items = document.querySelectorAll("[id='gravatarName']");
+
+        for (i = 0; i < items.length; i++) {
+            getGravatarName(items[i]);
+        }
+
+    });
+
+
+    $(function () {
 
         //if the showDoneItems session variable exists then set the checkbox and execute the show/hide function
         //could use session storage, localstorage or a cookie
@@ -98,14 +115,15 @@
         showHideDoneItems();
 
     });
-    
+
+       
     function showHideDoneItems() {
 
         let checked = document.getElementById("chkShowHideDoneItems").checked;
         let items = document.querySelectorAll("[data-done='True']");
 
         localStorage.setItem("showDoneItems", checked);
-        
+
         for (i = 0; i < items.length; i++) {
             toggleDisplay(items[i], checked);
         }
@@ -122,15 +140,50 @@
 
     function sortList() {
 
-        var sortValue = document.getElementById("sortBy").value;
+        let sortValue = document.getElementById("sortBy").value;
 
-        var items = $("#taskList").children("li");
+        let items = $("#taskList").children("li");
         items.sort(function (a, b) {
             return +$(a).data(sortValue) - +$(b).data(sortValue);
         });
 
         items.appendTo($("#taskList"));
+    }
 
+    //async function call will not work with IE.  Would need to re-write to use a promise.
+    //should also get the image URL here so we aren't doubling up on calls to gravatar
+    async function getGravatarName(element) {
+        let hash = $(element).data("hash");
+        //could use a spinner here
+        UpdateElement(element, "loading name...");
+        try {
+            getUserAsync(hash, element);
+        }
+        catch (err) {
+            UpdateElement(element, "");
+        }
+    }
+
+    function UpdateElement(element, innerHtml) {
+        element.innerHTML=innerHtml ;
+    }
+
+    async function getUserAsync(hash, element) 
+    {
+        let url = "https://en.gravatar.com/" + hash + ".json"
+        try {
+            let response = await fetch(url);
+            if (response.status == 200) {
+                let data = await response.json();
+                UpdateElement(element, data.entry[0].displayName);
+            }
+            else {
+                UpdateElement(element, "");
+            }
+        }
+        catch (err) {
+            UpdateElement(element, "");
+        }
     }
 
 </script>
