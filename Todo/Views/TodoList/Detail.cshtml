@@ -17,9 +17,9 @@
         <li class="list-group-item" data-rank="-1">
             <div class="row">
                 <div class="col-md-4">
-                    <a asp-action="Create" asp-controller="TodoItem" asp-route-todoListId="@Model.TodoListId">
+                    @*<a asp-action="Create" asp-controller="TodoItem" asp-route-todoListId="@Model.TodoListId">
                         <strong>Add New Item</strong>
-                    </a>
+                    </a>*@
                 </div>
                 <div class="col-md-8 text-right">
                     <label for="chkShowHideDoneItems">Include Done:</label>
@@ -50,7 +50,7 @@
                     break;
             }
 
-            <li class="list-group-item @contextualClass" data-done="@item.IsDone" data-rank="@item.Rank" data-importance="@((int)item.Importance)">
+            <li id="li-@item.TodoItemId"class="list-group-item @contextualClass" data-done="@item.IsDone" data-rank="@item.Rank" data-importance="@((int)item.Importance)">
 
                 <div class="row">
 
@@ -80,8 +80,19 @@
                         </div>
                     </div>
                 </div>
-                <div>Rank: @item.Rank</div>
-
+                <div>
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <div class="input-group-addon">
+                                    Rank
+                                </div>
+                                <input id="rankInput-@item.TodoItemId" data-todoItemId="@item.TodoItemId" type="number" min="1" max="9999" class="form-control" aria-label="Rank" value="@item.Rank">
+                            </div>
+                            <button type="submit" class="btn btn-default" data-todoItemId="@item.TodoItemId" onclick="updateRank(event)">Update</button>
+                        </div>
+                    </form>
+                </div>
             </li>
         }
     </ul>
@@ -130,7 +141,50 @@
         sortList();
 
     });
-    
+
+    function updateRank(e) {
+        e.preventDefault();
+        let btn = e.currentTarget;
+        let itemID = $(btn).data("todoitemid");
+        let id = "rankInput-" + itemID;
+        let rank = document.getElementById(id).value;
+        let sToken = document.getElementsByName("__RequestVerificationToken")[0].value;
+
+        if (parseInt(rank, 10) <= 0 || parseInt(rank, 10) > 9999) {
+            alert("invalid value");
+            return false;
+        }
+
+        const item = {
+            //__RequestVerificationToken: sToken,
+            TodoItemId: parseInt(itemID, 10),
+            Rank: parseInt(rank,10)
+        };
+
+        fetch("/TodoItem/UpdateRank", {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(item)
+        })
+            .then(() => updateRankAfterUpdate(itemID, rank))
+            .catch(error => alert("failed to update rank"));
+
+        return false;
+    }
+
+    function updateRankAfterUpdate(itemID, rank) {
+        alert("Success");
+        let liid = "li-" + itemID;
+        let list = document.getElementById(liid);
+        //list.setAttribute("data-rank", rank);
+        $(list).attr("data-rank", rank);
+        sortList();
+    }
+
+
     function showHideDoneItems() {
 
         let checked = document.getElementById("chkShowHideDoneItems").checked;
@@ -159,7 +213,8 @@
 
         let items = $("#taskList").children("li");
         items.sort(function (a, b) {
-            return +$(a).data(sortValue) - +$(b).data(sortValue);
+            //return +$(a).data(sortValue) - +$(b).data(sortValue);
+            return +$(a).attr("data-" + sortValue) - +$(b).attr("data-" + sortValue);
         });
 
         items.appendTo($("#taskList"));

@@ -65,6 +65,42 @@ namespace Todo.Controllers
 
             return RedirectToListDetail(todoItem.TodoListId);
         }
+        /// <summary>
+        /// Update the rank of an item
+        /// probably not the most efficient way.  I.e. redirect to the view
+        /// possibly should return a result back to the calling JS
+        /// should validate anti forgery token
+        /// </summary>
+        /// <param name="todoListId"></param>
+        /// <param name="todoItemId"></param>
+        /// <param name="rank"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IActionResult> UpdateRank([FromBody] TodoItemEditFields fields)
+        {
+            if (fields.Rank <= 0 || fields.Rank > 9999)
+            {
+                return ValidationProblem();
+            }
+            else
+            {
+                var todoItem = dbContext.SingleTodoItem(fields.TodoItemId);
+                todoItem.Rank = fields.Rank;
+
+                dbContext.Update(todoItem);
+                try
+                {
+                    await dbContext.SaveChangesAsync();
+                }
+                catch (System.Exception)
+                {
+
+                    return NotFound();
+                }
+            }
+            return NoContent();
+            //return RedirectToListDetail(1);
+        }
 
         private RedirectToActionResult RedirectToListDetail(int fieldsTodoListId)
         {
